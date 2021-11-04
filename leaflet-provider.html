@@ -23,24 +23,54 @@
         <script>
             var map, bounds, osm, controlCapas;
 
-            bounds = L.latLngBounds([[43.2878,-4.17116],[43.2142,-5.05812]])
+            bounds = L.latLngBounds([[43.60,-4.4],[43.2142,-5.05812]])
 
-            function init() {
+
+              function init() {
                 map = L.map('map', {
-                    center: [43.251955, 4.45135],
-                    zoom: 8,
+                    center: [43.40, 4.45135],
+                    zoom: 11,
                     maxBounds: bounds
                 });
+
                 osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     maxZoom: 19,
                     minZoom: 1,
                     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright"/>OpenStreetMap</a>'
                 }).addTo(map);
 
+                // var PNOA = L.tileLayer.wmts('https://www.ign.es/wmts/pnoa-ma',{layers:'Imágenes de satélite Sentinel y ortofotos PNOA'}).addTo(map);
+                //var PNOA = L.tileLayer.wms('https://www.ign.es/wms-inspire/pnoa-ma?',{layers: 'Ortoimagen'}).addTo(map);
+                //var geode = L.tileLayer.wms('http://mapas.igme.es/gis/services/Cartografia_Geologica/IGME_Geode_50/MapServer/WMSServer?',{layers:'IGME - Cartografía Geológica Continua GEODE 50'}).addTo(map);
+
+                var pnoa = L.tileLayer.wms("http://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&", {
+	                layers: "OI.OrthoimageCoverage",//nombre de la capa (ver get capabilities)
+	                format: 'image/jpeg',
+	                transparent: true,
+	                version: '1.3.0',//wms version (ver get capabilities)
+	                attribution: "PNOA WMS. Cedido por © Instituto Geográfico Nacional de España"
+	                }).addTo(map);
+
+                var geode = L.tileLayer.wms("http://mapas.igme.es/gis/services/Cartografia_Geologica/IGME_Geode_50/MapServer/WMSServer", {
+	                layers: "1,2,3,4,5,6,7,8,9",//nombre de la capa (ver get capabilities)
+	                format: 'image/jpeg',
+	                transparent: true,
+	                version: '1.3.0',//wms version (ver get capabilities)
+	                attribution: "IGME"
+	                }).addTo(map);
+
+
+                //var wmsLayer = L.tileLayer.wms('http://ows.mundialis.de/services/service?', {layers: 'TOPO-OSM-WMS'}).addTo(map);
+
+/*                 var tms_example = L.tileLayer('http://base_url/tms/1.0.0/example_layer@png/{z}/{x}/{y}.png', {
+                    tms: true
+                    }).addTo(map); */
+
                 var OpenStreetMap_DE =
                     L.tileLayer('http://{s}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png', {
                         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright"/>OpenStreetMap</a>'
                     });
+
                 var OpenStreetMap_HOT = L.tileLayer('http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
                     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright"/>OpenStreetMap</a>, Tiles courtesy of <a href="http://hot.openstreetmap.org/" target="_blank"/>Humanitarian OpenStreetMapTeam</a>'
                 });
@@ -86,7 +116,21 @@
                             maxZoom: 13
                         });
 
+                /* function updateOpacity(value) {
+                    pnoa.setOpacity(value);
+                    }; */
 
+                var SafeCast = L.tileLayer('https://s3.amazonaws.com/te512.safecast.org/{z}/{x}/{y}.png', {
+                    maxZoom: 16,
+                    attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Map style: &copy; <a href="https://blog.safecast.org/about/">SafeCast</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+                    });
+
+                var overlay = {"Safecat":SafeCast}
+
+               
+                /* var control = L.control.layers(mapaBase,
+                    {'Opacity_layer <br><input id="range" type="range" min="0" max="1" step="0.1" value="1" class="slider" onchange="updateOpacity(this.value)">':pnoa},
+                    {collapsed: false}).addTo(map); */
 
                 var mapaBase = {
                     'OSM': osm,
@@ -98,9 +142,13 @@
                     'Esri_WorldTopoMap': Esri_WorldTopoMap,
                     'Esri_WorldImagery': Esri_WorldImagery,
                     'Esri_WorldShadedRelief': Esri_WorldShadedRelief,
-                    'Esri_OceanBasemap': Esri_OceanBasemap
+                    'Esri_OceanBasemap': Esri_OceanBasemap,
+                    'PNOA': pnoa,
+                    'Geode': geode
                 };
-                controlCapas = L.control.layers(mapaBase, null);
+
+                controlCapas = L.control.layers(mapaBase, overlay, {collapsed:false});
+                //controlCapas = L.control.layers(mapaBase, null);
                 controlCapas.addTo(map);
                 controlEscala = L.control.scale();
                 controlEscala.addTo(map);
